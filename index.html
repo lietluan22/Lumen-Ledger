@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lumen-Ledger | Controle Financeiro</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --card-2: #273449;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --green: #22c55e;
+      --red: #ef4444;
+      --accent: #38bdf8;
+      --border: #334155;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #0f172a 0%, #111827 100%);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 32px 16px;
+    }
+
+    .container {
+      max-width: 980px;
+      margin: 0 auto;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+    }
+
+    h1 {
+      font-size: 1.9rem;
+      letter-spacing: -0.5px;
+    }
+
+    h1 span {
+      color: var(--accent);
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin-top: 4px;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .summary-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+    }
+
+    .summary-card p {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-bottom: 8px;
+    }
+
+    .summary-card strong {
+      font-size: 1.5rem;
+    }
+
+    .positive { color: var(--green); }
+    .negative { color: var(--red); }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px;
+      margin-bottom: 24px;
+    }
+
+    .panel h2 {
+      font-size: 1.1rem;
+      margin-bottom: 18px;
+    }
+
+    form {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr auto;
+      gap: 12px;
+      align-items: end;
+    }
+
+    label {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    input, select {
+      width: 100%;
+      background: var(--card-2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 11px 12px;
+      outline: none;
+      font-size: 0.95rem;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--accent);
+    }
+
+    button {
+      background: var(--accent);
+      color: #082f49;
+      border: none;
+      border-radius: 10px;
+      padding: 11px 18px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.2s;
+      white-space: nowrap;
+    }
+
+    button:hover {
+      filter: brightness(1.1);
+    }
+
+    .transaction-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .transaction {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      background: var(--card-2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+    }
+
+    .transaction-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .transaction-info strong {
+      font-size: 0.98rem;
+    }
+
+    .transaction-info small {
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+
+    .transaction-right {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .transaction-value {
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .delete-btn {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 7px 10px;
+      font-size: 0.8rem;
+    }
+
+    .delete-btn:hover {
+      color: var(--red);
+      border-color: var(--red);
+    }
+
+    .empty {
+      text-align: center;
+      color: var(--muted);
+      padding: 28px 12px;
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 760px) {
+      form {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      form button {
+        grid-column: span 2;
+      }
+
+      .transaction {
+        align-items: flex-start;
+      }
+
+      .transaction-right {
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <h1>Lumen<span>-Ledger</span></h1>
+        <p class="subtitle">Seu controle financeiro pessoal, simples e claro.</p>
+      </div>
+    </header>
+
+    <section class="summary">
+      <div class="summary-card">
+        <p>Saldo atual</p>
+        <strong id="balance">R$ 0,00</strong>
+      </div>
+      <div class="summary-card">
+        <p>Receitas</p>
+        <strong class="positive" id="income">R$ 0,00</strong>
+      </div>
+      <div class="summary-card">
+        <p>Despesas</p>
+        <strong class="negative" id="expense">R$ 0,00</strong>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Nova movimentação</h2>
+      <form id="transaction-form">
+        <div>
+          <label for="description">Descrição</label>
+          <input id="description" type="text" placeholder="Ex.: Salário, mercado..." required />
+        </div>
+        <div>
+          <label for="amount">Valor</label>
+          <input id="amount" type="number" min="0.01" step="0.01" placeholder="0,00" required />
+        </div>
+        <div>
+          <label for="type">Tipo</label>
+          <select id="type">
+            <option value="income">Receita</option>
+            <option value="expense">Despesa</option>
+          </select>
+        </div>
+        <div>
+          <label for="category">Categoria</label>
+          <select id="category">
+            <option>Salário</option>
+            <option>Moradia</option>
+            <option>Alimentação</option>
+            <option>Transporte</option>
+            <option>Saúde</option>
+            <option>Lazer</option>
+            <option>Outros</option>
+          </select>
+        </div>
+        <button type="submit">Adicionar</button>
+      </form>
+    </section>
+
+    <section class="panel">
+      <h2>Movimentações</h2>
+      <div id="transaction-list" class="transaction-list"></div>
+    </section>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "lumen-ledger-transactions";
+
+    const form = document.getElementById("transaction-form");
+    const descriptionInput = document.getElementById("description");
+    const amountInput = document.getElementById("amount");
+    const typeInput = document.getElementById("type");
+    const categoryInput = document.getElementById("category");
+    const list = document.getElementById("transaction-list");
+
+    let transactions = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+
+    function formatCurrency(value) {
+      return value.toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL"
+      });
+    }
+
+    function save() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions));
+    }
+
+    function render() {
+      list.innerHTML = "";
+
+      if (transactions.length === 0) {
+        list.innerHTML = '<p class="empty">Nenhuma movimentação cadastrada ainda.</p>';
+      }
+
+      transactions.forEach((transaction) => {
+        const item = document.createElement("div");
+        item.className = "transaction";
+
+        const isIncome = transaction.type === "income";
+        const signal = isIncome ? "+" : "-";
+        const valueClass = isIncome ? "positive" : "negative";
+
+        item.innerHTML = `
+          <div class="transaction-info">
+            <strong>${transaction.description}</strong>
+            <small>${transaction.category} • ${new Date(transaction.date).toLocaleDateString("pt-BR")}</small>
+          </div>
+          <div class="transaction-right">
+            <span class="transaction-value ${valueClass}">
+              ${signal} ${formatCurrency(transaction.amount)}
+            </span>
+            <button class="delete-btn" onclick="removeTransaction(${transaction.id})">Excluir</button>
+          </div>
+        `;
+
+        list.appendChild(item);
+      });
+
+      updateSummary();
+    }
+
+    function updateSummary() {
+      const income = transactions
+        .filter((t) => t.type === "income")
+        .reduce((total, t) => total + t.amount, 0);
+
+      const expense = transactions
+        .filter((t) => t.type === "expense")
+        .reduce((total, t) => total + t.amount, 0);
+
+      const balance = income - expense;
+
+      document.getElementById("income").textContent = formatCurrency(income);
+      document.getElementById("expense").textContent = formatCurrency(expense);
+
+      const balanceElement = document.getElementById("balance");
+      balanceElement.textContent = formatCurrency(balance);
+      balanceElement.className = balance >= 0 ? "positive" : "negative";
+    }
+
+    function removeTransaction(id) {
+      transactions = transactions.filter((transaction) => transaction.id !== id);
+      save();
+      render();
+    }
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      const transaction = {
+        id: Date.now(),
+        description: descriptionInput.value.trim(),
+        amount: Number(amountInput.value),
+        type: typeInput.value,
+        category: categoryInput.value,
+        date: new Date().toISOString()
+      };
+
+      if (!transaction.description || transaction.amount <= 0) {
+        return;
+      }
+
+      transactions.unshift(transaction);
+      save();
+      render();
+      form.reset();
+      descriptionInput.focus();
+    });
+
+    render();
+  </script>
+</body>
+</html>
